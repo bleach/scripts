@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+#
+# Wrapper script for using AWS access keys encrypted within pass.
+#
+# Minimises the time they live in plaintext, by decrypting them, setting them as
+# environment variables and running a one-off command. 
+#
+# Usage: with-aws-keys KEYNAME COMMAND
+#
+# Example: with-aws-keys dev aws ec2 describe-instances
+# 
+#   will extract keys from:
+#      aws/dev/accesskeyid
+#      aws/dev/secretaccesskey
+# 
+# If you'd like to put your keys somewhere else within pass, AWS_PASS_PREFIX
+# can be used to override the default path of "aws". 
+
+set -eu
+
+AWS_PASS_PREFIX="${AWS_PASS_PREFIX:-aws/}" 
+
+AWS_ACCESS_KEY_ID=$(pass show "${AWS_PASS_PREFIX}${1}/accesskeyid")
+AWS_SECRET_ACCESS_KEY=$(pass show "${AWS_PASS_PREFIX}${1}/secretaccesskey")
+
+export AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY
+
+shift
+
+eval "$@"
